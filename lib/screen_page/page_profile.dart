@@ -64,7 +64,6 @@ class _PageProfileState extends State<PageProfile> {
                   ),
                 ),
               );
-
             },
           )
         ],
@@ -80,20 +79,20 @@ class _PageProfileState extends State<PageProfile> {
                   print('LOL!');
                 }
               },
-             child: CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.blue,
               child: CircleAvatar(
                 radius: 50,
-                backgroundColor: Colors.white,
-                child: Text(
-                  username?.isNotEmpty == true ? username![0].toUpperCase() : '?',
-                  style: const TextStyle(fontSize: 36, color: Colors.blueAccent),
+                backgroundColor: Colors.blue,
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    username?.isNotEmpty == true ? username![0].toUpperCase() : '?',
+                    style: const TextStyle(fontSize: 36, color: Colors.blueAccent),
+                  ),
+                  // backgroundImage: AssetImage('images/user.png'),
                 ),
-                // backgroundImage: AssetImage('images/user.png'),
               ),
             ),
-          ),
             const SizedBox(height: 20),
             Card(
               child: ListTile(
@@ -120,29 +119,33 @@ class _PageProfileState extends State<PageProfile> {
               ),
             ),
             Card(
-                child: ListTile(
-              title:  Text('Email',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(email ?? ''),
-              leading: const Icon(CupertinoIcons.mail),
-            )),
+              child: ListTile(
+                title:  Text('Email',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(email ?? ''),
+                leading: const Icon(CupertinoIcons.mail),
+              ),
+            ),
             const SizedBox(height: 40),
-            ElevatedButton.icon(
-              onPressed: () {
-                session.clearSession();
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PageLogin()),
-                  (route) => false,
-                );
-              },
-              icon: const Icon(Icons.logout_rounded),
-              label: const Text('Logout'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.red,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+            SizedBox( // Wrap the ElevatedButton with SizedBox
+              width: double.infinity, // Set width to match the width of the column
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  session.clearSession();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PageLogin()),
+                        (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.logout_rounded),
+                label: const Text('Logout'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.red,
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                ),
               ),
             ),
           ],
@@ -150,5 +153,6 @@ class _PageProfileState extends State<PageProfile> {
       ),
     );
   }
+
 }
 

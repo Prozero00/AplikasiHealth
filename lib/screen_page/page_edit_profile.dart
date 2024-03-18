@@ -229,10 +229,19 @@ class _PageEditProfileState extends State<PageEditProfile> {
                     editProfile();
                   }
                 },
-                child: isLoading
-                    ? const CircularProgressIndicator() // Loading indicator
-                    : const Text('Save'),
-              ),
+                // style: ElevatedButton.styleFrom(
+                //   backgroundColor: Colors.teal.shade400, // Set the background color to green
+                //   padding: EdgeInsets.symmetric(vertical: 15), // Adjust padding as needed
+                // ),
+                child: SizedBox(
+                  width: double.infinity, // Set button width to match its parent container
+                  child: Center( // Center the text
+                    child: isLoading
+                        ? const CircularProgressIndicator() // Loading indicator
+                        : const Text('Save'),
+                  ),
+                ),
+              )
             ],
           ),
         ),
