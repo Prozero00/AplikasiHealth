@@ -1,6 +1,7 @@
 import 'package:aplikasi_health/screen_page/page_edit_profile.dart';
 import 'package:aplikasi_health/screen_page/page_login.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -73,7 +74,13 @@ class _PageProfileState extends State<PageProfile> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-             CircleAvatar(
+            GestureDetector(
+              onLongPress: (){
+                if (kDebugMode) {
+                  print('LOL!');
+                }
+              },
+             child: CircleAvatar(
               radius: 50,
               backgroundColor: Colors.blue,
               child: CircleAvatar(
@@ -86,6 +93,7 @@ class _PageProfileState extends State<PageProfile> {
                 // backgroundImage: AssetImage('images/user.png'),
               ),
             ),
+          ),
             const SizedBox(height: 20),
             Card(
               child: ListTile(

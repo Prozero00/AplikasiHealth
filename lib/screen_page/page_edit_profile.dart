@@ -5,8 +5,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PageEditProfile extends StatefulWidget {
-  final Function(String, String, String, String) onProfileUpdate; //callback func
-  const PageEditProfile({Key? key, required this.onProfileUpdate}) : super(key: key);
+  final Function(String, String, String, String)
+      onProfileUpdate; //callback func
+  const PageEditProfile({Key? key, required this.onProfileUpdate})
+      : super(key: key);
 
   @override
   _PageEditProfileState createState() => _PageEditProfileState();
@@ -18,6 +20,8 @@ class _PageEditProfileState extends State<PageEditProfile> {
   TextEditingController txtEmail = TextEditingController();
   TextEditingController txtPassword = TextEditingController();
 
+  final _formKey = GlobalKey<FormState>();
+
   String? id;
 
   bool isLoading = false;
@@ -27,7 +31,6 @@ class _PageEditProfileState extends State<PageEditProfile> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     setState(() {
       id = pref.getString("id") ?? '';
-      print('id $id');
     });
   }
 
@@ -39,7 +42,6 @@ class _PageEditProfileState extends State<PageEditProfile> {
 
   Future<ModelEditProfile?> editProfile() async {
     try {
-      // Show confirmation dialog
       bool confirmAction = await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -49,13 +51,13 @@ class _PageEditProfileState extends State<PageEditProfile> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context, false); // Return false when canceled
+                  Navigator.pop(context, false);
                 },
                 child: Text('Cancel'),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context, true); // Return true when confirmed
+                  Navigator.pop(context, true);
                 },
                 child: Text('Save'),
               ),
@@ -69,7 +71,6 @@ class _PageEditProfileState extends State<PageEditProfile> {
           isLoading = true;
         });
 
-        // Proceed with save action
         http.Response res = await http.post(
           Uri.parse('http://localhost/aplikasihealth/edit_profile.php'),
           body: {
@@ -108,7 +109,7 @@ class _PageEditProfileState extends State<PageEditProfile> {
       setState(() {
         isLoading = false;
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
       });
     }
     return null;
@@ -124,16 +125,18 @@ class _PageEditProfileState extends State<PageEditProfile> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             children: [
               TextFormField(
                 controller: txtFullName,
                 decoration: InputDecoration(
-                    labelText: 'Fullname',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    floatingLabelBehavior: FloatingLabelBehavior.auto,
+                  labelText: 'Fullname',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
                   suffixIcon: IconButton(
                     onPressed: () {
                       txtFullName.clear();
@@ -148,9 +151,7 @@ class _PageEditProfileState extends State<PageEditProfile> {
                   return null;
                 },
               ),
-
               const SizedBox(height: 10),
-
               TextFormField(
                 controller: txtUsername,
                 decoration: InputDecoration(
@@ -173,17 +174,15 @@ class _PageEditProfileState extends State<PageEditProfile> {
                   return null;
                 },
               ),
-
               const SizedBox(height: 10),
-
               TextFormField(
                 controller: txtEmail,
                 decoration: InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    floatingLabelBehavior: FloatingLabelBehavior.auto,
+                  labelText: 'Email',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
                   suffixIcon: IconButton(
                     onPressed: () {
                       txtEmail.clear();
@@ -201,17 +200,15 @@ class _PageEditProfileState extends State<PageEditProfile> {
                   return null;
                 },
               ),
-
               const SizedBox(height: 10),
-
               TextFormField(
                 controller: txtPassword,
                 decoration: InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    floatingLabelBehavior: FloatingLabelBehavior.auto,
+                  labelText: 'Password',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
                   suffixIcon: IconButton(
                     onPressed: () {
                       setState(() {
@@ -225,19 +222,17 @@ class _PageEditProfileState extends State<PageEditProfile> {
                 ),
                 obscureText: !isPasswordVisible,
               ),
-
-              SizedBox(height: 20),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Align buttons evenly
-                children: [
-                  ElevatedButton(
-                    onPressed: editProfile,
-                    child: Text('Save'),
-                  ),
-                ],
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: isLoading ? null : () {
+                  if (_formKey.currentState!.validate()) { // Validate form
+                    editProfile();
+                  }
+                },
+                child: isLoading
+                    ? const CircularProgressIndicator() // Loading indicator
+                    : const Text('Save'),
               ),
-
             ],
           ),
         ),
