@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:aplikasi_health/model/model_create_pegawai.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -77,7 +75,6 @@ class _PageListPegawaiState extends State<PageListPegawai> {
               itemCount: listPegawai.length,
               itemBuilder: (context, index) {
                 Datum data = listPegawai[index];
-                String? id = data.id;
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
