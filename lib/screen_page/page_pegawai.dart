@@ -1,34 +1,49 @@
 import 'dart:convert';
 
+import 'package:aplikasi_health/model/model_create_pegawai.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../model/model_user.dart';
+import '../model/model_pegawai.dart';
 
-class PagePegawai extends StatefulWidget {
-  const PagePegawai({super.key});
+class PageListPegawai extends StatefulWidget {
+  const PageListPegawai({super.key});
 
   @override
-  State<PagePegawai> createState() => _PagePegawaiState();
+  State<PageListPegawai> createState() => _PageListPegawaiState();
 }
 
-class _PagePegawaiState extends State<PagePegawai> {
-  bool isLoading = true;
-  List<ModelUser> listUser = [];
 
-  Future getUser() async {
+//Page Pegawai
+class _PageListPegawaiState extends State<PageListPegawai> {
+  bool isLoading = true;
+  List<Datum> listPegawai = []; // Change here
+
+  Future<List<Datum>> getPegawai() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
       http.Response response = await http
-          .get(Uri.parse('https://jsonplaceholder.typicode.com/users'));
-      var data = jsonDecode(response.body);
-      setState(() {
-        for (Map<String, dynamic> i in data) {
-          listUser.add(ModelUser.fromJson(i));
-        }
-      });
+          .get(Uri.parse('http://localhost/aplikasihealth/getPegawai.php'));
+      return modelPegawaiFromJson(response.body).data;
+    } catch (e) {
+      isLoading = false;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
+      return []; // Return an empty list in case of an error
+    }
+  }
+
+  Future deletePegawai(String id) async {
+    try {
+      http.Response response = await http.post(
+          Uri.parse('http://localhost/aplikasihealth/deletePegawai.php'),
+          body: {
+            "id": id,
+          });
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
     } catch (e) {
       isLoading = false;
       ScaffoldMessenger.of(context)
@@ -36,13 +51,18 @@ class _PagePegawaiState extends State<PagePegawai> {
     }
   }
 
-  //do in background
+  // Do in background
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getUser();
+    getPegawai().then((pegawais) {
+      setState(() {
+        listPegawai = pegawais;
+        isLoading = false;
+      });
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,92 +71,287 @@ class _PagePegawaiState extends State<PagePegawai> {
         backgroundColor: Colors.green,
         title: const Text("List Data User"),
       ),
-      body: Center(
-        child: ListView.builder(
-            itemCount: listUser.length,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => PageDetailUser(
-                              listUser[index].name,
-                              listUser[index].email,
-                              listUser[index].username,
-                              listUser[index].phone,
-                              listUser[index].website,
-                              listUser[index].address.street,
-                              listUser[index].address.suite,
-                              listUser[index].address.city,
-                              listUser[index].address.zipcode,
-                              listUser[index].company.name,
-                              listUser[index].company.catchPhrase,
-                              listUser[index].company.bs)));
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Card(
-                    child: ListTile(
-                      title: Text(
-                        listUser[index].name ?? "",
-                        style: const TextStyle(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: listPegawai.length,
+              itemBuilder: (context, index) {
+                Datum data = listPegawai[index];
+                String? id = data.id;
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => PageDetailPegawai(data)));
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Card(
+                      child: ListTile(
+                        title: Text(
+                          '${data.nama}',
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: Colors.red),
-                      ),
-                      subtitle: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(listUser[index].email ?? ""),
-                          Text(listUser[index].address.street ?? ""),
-                          Text('Company : ${listUser[index].company}' ?? ""),
-                        ],
+                            color: Colors.red,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            PageUpdatePegawai(data)));
+                              },
+                              icon: Icon(Icons.edit),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                showDialog(
+                                  barrierDismissible: false,
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    content: Text('Hapus data ?'),
+                                    actions: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          deletePegawai(data.id).then((value) {
+                                            Navigator.pushAndRemoveUntil(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: ((context) =>
+                                                        PageListPegawai())),
+                                                (route) => false);
+                                          });
+                                        },
+                                        child: Text('Hapus'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text('Batal'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.delete),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        child: Text(
+          '+',
+          style: TextStyle(fontSize: 24),
+        ),
+        backgroundColor: Colors.deepOrange,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PageInsertPegawai()),
+          );
+        },
       ),
     );
   }
 }
 
-class PageDetailUser extends StatelessWidget {
-  final String nama,
-      email,
-      username,
-      phone,
-      website,
-      street,
-      suite,
-      city,
-      zipCode,
-      company,
-      companyCatchPhrase,
-      companyBs;
-  const PageDetailUser(
-      this.nama,
-      this.email,
-      this.username,
-      this.phone,
-      this.website,
-      this.street,
-      this.city,
-      this.suite,
-      this.zipCode,
-      this.company,
-      this.companyCatchPhrase,
-      this.companyBs,
-      {super.key});
+
+
+//Page Insert Pegawai
+class PageInsertPegawai extends StatefulWidget {
+  const PageInsertPegawai({Key? key}) : super(key: key);
+
+  @override
+  State<PageInsertPegawai> createState() => _PageInsertPegawaiState();
+}
+
+class _PageInsertPegawaiState extends State<PageInsertPegawai> {
+  TextEditingController nama = TextEditingController();
+  TextEditingController no_bp = TextEditingController();
+  TextEditingController no_hp = TextEditingController();
+  TextEditingController email = TextEditingController();
+  GlobalKey<FormState> keyForm = GlobalKey<FormState>();
+
+  bool isLoading = false;
+
+  Future<ModelCreatePegawai?> createPegawai() async {
+    try {
+      http.Response res = await http.post(
+        Uri.parse("http://localhost/aplikasihealth/createPegawai.php"),
+        body: {
+          "nama": nama.text,
+          "no_bp": no_bp.text,
+          "no_hp": no_hp.text,
+          "email": email.text,
+        },
+      );
+      ModelCreatePegawai data = modelCreatePegawaiFromJson(res.body);
+
+      if (data.value == 1) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => PageListPegawai()),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${data.message}',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      }
+      return data;
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Gagal menambahkan pegawai",
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+      return null;
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail User'),
+        title: Text('Tambah Pegawai'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(10),
+        child: Form(
+          key: keyForm,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: nama,
+                validator: (val) =>
+                    val!.isEmpty ? "Nama tidak boleh kosong" : null,
+                style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                decoration: InputDecoration(
+                  hintText: "NAMA",
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              SizedBox(height: 8),
+              TextFormField(
+                controller: no_bp,
+                validator: (val) =>
+                    val!.isEmpty ? "Nomor BP tidak boleh kosong" : null,
+                style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                decoration: InputDecoration(
+                  hintText: "NO BP",
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              SizedBox(height: 8),
+              TextFormField(
+                controller: no_hp,
+                validator: (val) =>
+                    val!.isEmpty ? "Nomor HP tidak boleh kosong" : null,
+                style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                decoration: InputDecoration(
+                  hintText: "NO HP",
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              SizedBox(height: 8),
+              TextFormField(
+                controller: email,
+                validator: (val) =>
+                    val!.isEmpty ? "Email can't be empty" : null,
+                style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                decoration: InputDecoration(
+                  hintText: "EMAIL",
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              SizedBox(height: 25),
+              Center(
+                child: isLoading
+                    ? CircularProgressIndicator()
+                    : MaterialButton(
+                        minWidth: 150,
+                        height: 45,
+                        color: Colors.white,
+                        onPressed: () {
+                          if (keyForm.currentState!.validate()) {
+                            createPegawai();
+                          }
+                        },
+                        child: Text(
+                          "SIMPAN",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+// Page Detail Pegawai
+class PageDetailPegawai extends StatelessWidget {
+  final Datum? data;
+
+  const PageDetailPegawai(this.data, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Detail Pegawai'),
         backgroundColor: Colors.teal,
       ),
       body: Padding(
@@ -149,14 +364,14 @@ class PageDetailUser extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Berikut ini adalah detail User: ",
+                  "Berikut ini adalah detail Pegawai: ",
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Nama : $nama',
+                  'Nama : ${data?.nama}',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -164,62 +379,21 @@ class PageDetailUser extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Email : $email',
+                  'Nomor BP : ${data?.noBp}',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Username : $username',
+                  'Nomor HP : ${data?.noHp}',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Phone : $phone',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Website : $website',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(
-                  height: 40,
-                ),
-                Text(
-                  'Alamat : \n$street, $suite, $city, $zipCode',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(
-                  height: 40,
-                ),
-                Text(
-                  'Company : $company',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Alamat : $companyCatchPhrase,',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  companyBs,
+                  'Email : ${data?.email}',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -227,6 +401,153 @@ class PageDetailUser extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+// Page Update Pegawai
+class PageUpdatePegawai extends StatefulWidget {
+  final Datum data;
+
+  const PageUpdatePegawai(this.data, {super.key});
+
+  @override
+  State<PageUpdatePegawai> createState() => _PageUpdatePegawaiState();
+}
+
+class _PageUpdatePegawaiState extends State<PageUpdatePegawai> {
+  TextEditingController id = TextEditingController();
+  TextEditingController nama = TextEditingController();
+  TextEditingController no_bp = TextEditingController();
+  TextEditingController no_hp = TextEditingController();
+  TextEditingController email = TextEditingController();
+  GlobalKey<FormState> keyForm = GlobalKey<FormState>();
+
+  bool isLoading = false;
+
+  Future updatePegawai() async {
+    final res = await http.post(
+      Uri.parse("http://localhost/aplikasihealth/updatePegawai.php"),
+      body: {
+        "id": id.text, // Pass the id of the employee to update
+        "nama": nama.text,
+        "no_bp": no_bp.text,
+        "no_hp": no_hp.text,
+        "email": email.text,
+      },
+    );
+
+    if (res.statusCode == 200) {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    id.text = widget.data.id;
+    nama.text = widget.data.nama;
+    no_bp.text = widget.data.noBp;
+    no_hp.text = widget.data.noHp;
+    email.text = widget.data.email;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Update Pegawai'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(10),
+        child: Form(
+          key: keyForm,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: nama,
+                style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                decoration: InputDecoration(
+                  hintText: "Nama",
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              SizedBox(height: 8),
+              TextFormField(
+                controller: no_bp,
+                style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                decoration: InputDecoration(
+                  hintText: "NO BP",
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              SizedBox(height: 8),
+              TextFormField(
+                controller: no_hp,
+                style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                decoration: InputDecoration(
+                  hintText: "NO HP",
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              SizedBox(height: 8),
+              TextFormField(
+                controller: email,
+                style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                decoration: InputDecoration(
+                  hintText: "EMAIL",
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                ),
+              ),
+              SizedBox(height: 25),
+              Center(
+                child: isLoading
+                    ? CircularProgressIndicator()
+                    : MaterialButton(
+                        minWidth: 150,
+                        height: 45,
+                        color: Colors.white,
+                        onPressed: () {
+                          if (keyForm.currentState!.validate()) {
+                            updatePegawai();
+                          }
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PageListPegawai()),
+                              (route) => false);
+                        },
+                        child: Text(
+                          "SIMPAN",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ),
+              ),
+            ],
           ),
         ),
       ),
