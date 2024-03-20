@@ -1,4 +1,4 @@
-import 'package:aplikasi_health/screen_page/page_list%20_berita.dart';
+import 'package:aplikasi_health/screen_page/page_list_berita.dart';
 import 'package:aplikasi_health/screen_page/page_login.dart';
 import 'package:aplikasi_health/screen_page/page_pegawai.dart';
 import 'package:aplikasi_health/screen_page/page_profile.dart';
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.blueAccent,
         secondaryHeaderColor: Colors.teal,
       ),
-      home: const SplashScreen(),
+      home: const PageHome(),
       debugShowCheckedModeBanner: false,
     );
   }

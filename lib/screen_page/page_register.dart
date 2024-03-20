@@ -18,11 +18,12 @@ class _PageRegistrasiState extends State<PageRegistrasi> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
 
-  GlobalKey<FormState> keyForm = GlobalKey<FormState>();
+  GlobalKey<FormState> keyform = GlobalKey<FormState>();
   bool isLoading = false;
+  bool isPasswordVisible = false;
 
   Future<void> registerAccount() async {
-    if (!keyForm.currentState!.validate()) {
+    if (!keyform.currentState!.validate()) {
       return;
     }
 
@@ -32,7 +33,7 @@ class _PageRegistrasiState extends State<PageRegistrasi> {
 
     try {
       http.Response res = await http.post(
-        Uri.parse("http://localhost/kamusDb/register.php"),
+        Uri.parse("http://localhost/aplikasihealth/register.php"),
         body: {
           "fullname": fullname.text,
           "username": username.text,
@@ -86,80 +87,43 @@ class _PageRegistrasiState extends State<PageRegistrasi> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue, Colors.purple],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+      appBar: AppBar(
+        backgroundColor: Colors.blueAccent,
+        title: const Text('Register Form'),
+      ),
+      body: Form(
+        key: keyform,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Form(
-            key: keyForm,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.accessibility_new_rounded,
-                  size: 130,
-                  color: Colors.white,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  "Health+",
-                  style: GoogleFonts.merriweather(
-                    textStyle: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
                 TextFormField(
                   controller: fullname,
-                  validator: (val) =>
-                  val!.isEmpty ? "Full name can't be empty" : null,
-                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  validator: (val) {
+                    return val!.isEmpty ? "Full name is required" : null;
+                  },
                   decoration: InputDecoration(
-                    hintText: "FULLNAME",
-                    hintStyle:
-                    TextStyle(color: Colors.white.withOpacity(0.8)),
+                    hintText: "Full Name",
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(6),
-                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.3),
                   ),
                 ),
                 const SizedBox(
-                  height: 8,
+                  height: 16,
                 ),
                 TextFormField(
                   controller: username,
-                  validator: (val) =>
-                  val!.isEmpty ? "Username can't be empty" : null,
-                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  validator: (val) {
+                    return val!.isEmpty ? "Username is required" : null;
+                  },
                   decoration: InputDecoration(
-                    hintText: "USERNAME",
-                    hintStyle:
-                    TextStyle(color: Colors.white.withOpacity(0.8)),
+                    hintText: 'Username',
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(6),
-                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.3),
                   ),
                 ),
                 const SizedBox(
@@ -167,91 +131,70 @@ class _PageRegistrasiState extends State<PageRegistrasi> {
                 ),
                 TextFormField(
                   controller: email,
-                  validator: (val) =>
-                  val!.isEmpty ? "Email can't be empty" : null,
-                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  validator: (val) {
+                    return val!.isEmpty ? "Email is Required" : null;
+                  },
                   decoration: InputDecoration(
-                    hintText: "EMAIL",
-                    hintStyle:
-                    TextStyle(color: Colors.white.withOpacity(0.8)),
+                    hintText: 'Email',
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(6),
-                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.3),
                   ),
                 ),
                 const SizedBox(
-                  height: 8,
+                  height: 16,
                 ),
                 TextFormField(
                   controller: password,
-                  validator: (val) =>
-                  val!.isEmpty ? "Password can't be empty" : null,
-                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  validator: (val) {
+                    return val!.isEmpty ? "Password is Required!" : null;
+                  },
                   decoration: InputDecoration(
-                    hintText: "PASSWORD",
-                    hintStyle:
-                    TextStyle(color: Colors.white.withOpacity(0.8)),
+                    hintText: 'Password',
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(6),
-                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.3),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isPasswordVisible = !isPasswordVisible;
+                        });
+                      },
+                      icon: Icon(isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off),
+                    ),
                   ),
-                  obscureText: true,
+                  obscureText: !isPasswordVisible,
                 ),
                 const SizedBox(
-                  height: 25,
+                  height: 16,
                 ),
-                Center(
-                  child: isLoading
-                      ? Center(
-                    child: CircularProgressIndicator(),
-                  )
-                      : MaterialButton(
-                    minWidth: 150,
-                    height: 45,
-                    color: Colors.white,
-                    onPressed: () {
+                ElevatedButton(
+                  onPressed: () {
+                    //cek kondisi & get data inputan
+                    if (keyform.currentState?.validate() == true) {
+                      //panggil func register
                       registerAccount();
-                    },
-                    child: Text(
-                      "SIGN UP",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.purple,
-                      ),
-                    ),
-                  ),
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    // backgroundColor: Colors.tealAccent,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 30)),
+                  child: isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text('Sign Up'),
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                Container(
-                  padding: EdgeInsets.all(16),
-                  child: MaterialButton(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                      side: BorderSide(width: 1, color: Colors.white30),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PageLogin(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      "Already have an account? Sign In here",
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PageLogin()),
+                    );
+                  },
+                  child: const Text('Already have an account? Login here'),
                 ),
               ],
             ),
@@ -260,4 +203,5 @@ class _PageRegistrasiState extends State<PageRegistrasi> {
       ),
     );
   }
+
 }
