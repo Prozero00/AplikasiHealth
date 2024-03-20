@@ -36,29 +36,29 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration:  BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueGrey.shade400, Colors.blueAccent],
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
+            colors: [Colors.blue, Colors.purple],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Icon(
-            //   Icons.accessibility_new_rounded,
-            //   size: 150,
-            //   color: Colors.white,
-            // ),
+            Icon(
+              Icons.accessibility_new_rounded,
+              size: 150,
+              color: Colors.white,
+            ),
             SizedBox(
               height: 20,
             ),
             Text(
               "Health+",
               style: GoogleFonts.merriweather(
-                  textStyle: const TextStyle(
+                  textStyle: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 32)),

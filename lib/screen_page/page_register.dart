@@ -32,7 +32,7 @@ class _PageRegistrasiState extends State<PageRegistrasi> {
 
     try {
       http.Response res = await http.post(
-        Uri.parse("http://localhost/aplikasihealth/register.php"),
+        Uri.parse("http://localhost/kamusDb/register.php"),
         body: {
           "fullname": fullname.text,
           "username": username.text,
