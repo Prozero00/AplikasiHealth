@@ -1,5 +1,6 @@
 import 'package:aplikasi_health/model/model_create_pegawai.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
 import '../model/model_pegawai.dart';
@@ -11,11 +12,11 @@ class PageListPegawai extends StatefulWidget {
   State<PageListPegawai> createState() => _PageListPegawaiState();
 }
 
-
 //Page Pegawai
 class _PageListPegawaiState extends State<PageListPegawai> {
   bool isLoading = true;
-  List<Datum> listPegawai = []; // Change here
+  List<Datum> listPegawai = [];
+  TextEditingController txtCari = TextEditingController();
 
   Future<List<Datum>> getPegawai() async {
     try {
@@ -61,99 +62,149 @@ class _PageListPegawaiState extends State<PageListPegawai> {
     });
   }
 
+  bool isCari = true;
+  List<Datum> filterPegawai = [];
+
+  _PageListPegawaiState() {
+    txtCari.addListener(() {
+      if (txtCari.text.isEmpty) {
+        setState(() {
+          isCari = true;
+          txtCari.text = "";
+        });
+      } else {
+        setState(() {
+          isCari = false;
+          txtCari.text != "";
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: const Text("List Data User"),
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: listPegawai.length,
-              itemBuilder: (context, index) {
-                Datum data = listPegawai[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => PageDetailPegawai(data)));
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Card(
-                      child: ListTile(
-                        title: Text(
-                          '${data.nama}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.red,
-                          ),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            PageUpdatePegawai(data)));
-                              },
-                              icon: Icon(Icons.edit),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                showDialog(
-                                  barrierDismissible: false,
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    content: Text('Hapus data ?'),
-                                    actions: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          deletePegawai(data.id).then((value) {
-                                            Navigator.pushAndRemoveUntil(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: ((context) =>
-                                                        PageListPegawai())),
-                                                (route) => false);
-                                          });
-                                        },
-                                        child: Text('Hapus'),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text('Batal'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              icon: Icon(Icons.delete),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
+          backgroundColor: Colors.blue,
+          title: Text("List Data User",
+              style: GoogleFonts.merriweather(
+                  textStyle: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              )))),
+      body: Container(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          children: [
+            TextField(
+              controller: txtCari,
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
+                hintText: "Search",
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(color: Colors.lightBlue)),
+              ),
             ),
+            isCari
+                ? Expanded(
+                    child: ListView.builder(
+                      itemCount: listPegawai.length,
+                      itemBuilder: (context, index) {
+                        Datum data = listPegawai[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => PageDetailPegawai(data)),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Card(
+                              child: ListTile(
+                                title: Text(
+                                  '${data.nama}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  PageUpdatePegawai(data)),
+                                        );
+                                      },
+                                      icon: Icon(Icons.edit),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        showDialog(
+                                          barrierDismissible: false,
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            content: Text('Hapus data ?',
+                                            style: GoogleFonts.merriweather(
+                                              textStyle: const TextStyle(
+                                                  color: Colors.black,
+                                              ))),
+                                            actions: [
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  deletePegawai(data.id)
+                                                      .then((value) {
+                                                    Navigator
+                                                        .pushAndRemoveUntil(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: ((context) =>
+                                                              PageListPegawai())),
+                                                      (route) => false,
+                                                    );
+                                                  });
+                                                },
+                                                child: Text('Hapus'),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text('Batal'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      icon: Icon(Icons.delete),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                : CreateFilterList(),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         child: Text(
           '+',
-          style: TextStyle(fontSize: 24),
+          style: TextStyle(fontSize: 24, color: Colors.white),
         ),
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: Colors.blueAccent,
         onPressed: () {
           Navigator.push(
             context,
@@ -163,9 +214,98 @@ class _PageListPegawaiState extends State<PageListPegawai> {
       ),
     );
   }
+
+  Widget CreateFilterList() {
+    filterPegawai = listPegawai
+        .where((pegawai) =>
+            pegawai.nama.toLowerCase().contains(txtCari.text.toLowerCase()))
+        .toList();
+    return HasilSearch(filterPegawai);
+  }
+
+  Widget HasilSearch(List<Datum> filteredList) {
+    return Expanded(
+      child: ListView.builder(
+        itemCount: filteredList.length,
+        itemBuilder: (context, index) {
+          Datum data = filteredList[index];
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => PageDetailPegawai(data)),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Card(
+                child: ListTile(
+                  title: Text(
+                    '${data.nama}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => PageUpdatePegawai(data)),
+                          );
+                        },
+                        icon: Icon(Icons.edit),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          showDialog(
+                            barrierDismissible: false,
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              content: Text('Hapus data ?'),
+                              actions: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    deletePegawai(data.id).then((value) {
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: ((context) =>
+                                                PageListPegawai())),
+                                        (route) => false,
+                                      );
+                                    });
+                                  },
+                                  child: Text('Hapus'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Batal'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        icon: Icon(Icons.delete),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
-
-
 
 //Page Insert Pegawai
 class PageInsertPegawai extends StatefulWidget {
@@ -230,12 +370,17 @@ class _PageInsertPegawaiState extends State<PageInsertPegawai> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tambah Pegawai'),
+        backgroundColor: Colors.blueAccent,
+        title: Text('Tambah Pegawai',
+            style: GoogleFonts.merriweather(
+                textStyle: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ))),
       ),
       body: Padding(
         padding: EdgeInsets.all(10),
@@ -323,7 +468,7 @@ class _PageInsertPegawaiState extends State<PageInsertPegawai> {
                           "SIMPAN",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: Colors.blueAccent,
                           ),
                         ),
                       ),
@@ -336,8 +481,6 @@ class _PageInsertPegawaiState extends State<PageInsertPegawai> {
   }
 }
 
-
-
 // Page Detail Pegawai
 class PageDetailPegawai extends StatelessWidget {
   final Datum? data;
@@ -348,8 +491,13 @@ class PageDetailPegawai extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail User'),
-        backgroundColor: Colors.teal,
+        title: Text('Detail User',
+            style: GoogleFonts.merriweather(
+                textStyle: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ))),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -363,16 +511,16 @@ class PageDetailPegawai extends StatelessWidget {
                 const Text(
                   "Berikut ini adalah detail Pegawai: ",
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   'Nama : ${data?.nama}',
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.red,
+                    color: Colors.black,
                   ),
                 ),
                 Text(
@@ -404,8 +552,6 @@ class PageDetailPegawai extends StatelessWidget {
     );
   }
 }
-
-
 
 // Page Update Pegawai
 class PageUpdatePegawai extends StatefulWidget {
@@ -454,7 +600,14 @@ class _PageUpdatePegawaiState extends State<PageUpdatePegawai> {
     email.text = widget.data.email;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Update Pegawai'),
+        backgroundColor: Colors.blueAccent,
+        title: Text('Update Pegawai',
+        style: GoogleFonts.merriweather(
+        textStyle: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+    ))
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.all(10),
@@ -539,7 +692,7 @@ class _PageUpdatePegawaiState extends State<PageUpdatePegawai> {
                           "SIMPAN",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: Colors.blueAccent,
                           ),
                         ),
                       ),
