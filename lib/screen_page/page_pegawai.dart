@@ -351,7 +351,7 @@ class PageDetailPegawai extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Pegawai'),
+        title: const Text('Detail User'),
         backgroundColor: Colors.teal,
       ),
       body: Padding(
